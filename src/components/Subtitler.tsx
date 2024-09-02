@@ -4,6 +4,7 @@ import { Subtitle } from './Subtitle'
 import { IconToggle } from './IconToggle'
 import { MicIcon } from './icons/MicIcon'
 import { SettingsIcon } from './icons/SettingsIcon'
+import { TTSPlayer } from './TTSPlayer'
 
 export interface SubtitlerProps {
   apiKey?: string
@@ -65,6 +66,7 @@ export function Subtitler({
     browserSupportsSpeechRecognition,
     isMicrophoneAvailable,
     translation,
+    latestTranslation, // Make sure this is returned from useSubtitles
   } = useSubtitles({
     recogLang,
     transLangs,
@@ -143,21 +145,28 @@ Nulla architecto corrupti et debitis rem. Ut soluta dolorum soluta sint qui dolo
         fontStrokeWidth={recogFontStrokeWidth}
         height={recogHeight}
       />
-      {transLangs.map((lang) => (
-        <Subtitle
-          key={lang}
-          fontFamily={transFont}
-          value={translation[lang] || ''}
-          inputId={`transSubtitles-${lang}`}
-          bgColor={bgColor}
-          fontColor={transFontColor}
-          fontStrokeColor={transFontStrokeColor}
-          fontSize={transFontSize}
-          fontWeight={transFontWeight}
-          fontStrokeWidth={transFontStrokeWidth}
-          scrollBottom={showHistory}
-          height={transHeight}
-        />
+      {transLangs.map((lang, index) => (
+        <div key={lang}>
+          <Subtitle
+            fontFamily={transFont}
+            value={latestTranslation[lang] || ''}
+            inputId={`transSubtitles-${lang}`}
+            bgColor={bgColor}
+            fontColor={transFontColor}
+            fontStrokeColor={transFontStrokeColor}
+            fontSize={transFontSize}
+            fontWeight={transFontWeight}
+            fontStrokeWidth={transFontStrokeWidth}
+            scrollBottom={showHistory}
+            height={transHeight}
+          />
+          {index === 0 && (
+            <TTSPlayer
+              text={latestTranslation[lang] || ''}
+              lang={lang}
+            />
+          )}
+        </div>
       ))}
       <div className="p-8 border border-gray-200">
         <div className="flex justify-between">

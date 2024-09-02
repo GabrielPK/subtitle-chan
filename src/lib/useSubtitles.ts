@@ -23,14 +23,12 @@ export interface useSubtitlesProps {
 }
 
 export function useSubtitles(props: useSubtitlesProps = {}) {
-  // const [translation, setTranslation] = useState('')
-  // const [translationLog, setTranslationLog] = useState('')
-
-  const maxLogSize = 5000 // Fairly arbitrary, rendering plaintext is cheap
   const [transcriptLog, setTranscriptLog] = useState('')
   const [translation, setTranslation] = useState<{ [key: string]: string }>({})
   const [translationLog, setTranslationLog] = useState<{ [key: string]: string }>({})
+  const [latestTranslation, setLatestTranslation] = useState<{ [key: string]: string }>({})
 
+  const maxLogSize = 5000 // Fairly arbitrary, rendering plaintext is cheap
   const {
     recogLang = 'en',
     transLang = 'ja',
@@ -71,6 +69,8 @@ export function useSubtitles(props: useSubtitlesProps = {}) {
     }, maxDelay)
     let phraseTimer: NodeJS.Timeout
     if (finalTranscript) {
+      // Log the transcription
+      logger.log(`Transcription: ${finalTranscript}`)
       if (finalTranscript.length > maxPhraseLength) {
         requestTranslationQuery()
       } else {
@@ -149,12 +149,15 @@ export function useSubtitles(props: useSubtitlesProps = {}) {
             ...prev,
             [lang]: appendToFixedSizeString(prev[lang] || '', ' ' + trans, maxLogSize),
           }))
+          // Log the translation
+          logger.log(`Translation (${lang}): ${trans}`)
         }
       } catch (e) {
         logger.error(e)
       }
     }
     setTranslation(translations)
+    setLatestTranslation(translations)
   }
 
   const returnedTranscript = showHistory
@@ -167,6 +170,7 @@ export function useSubtitles(props: useSubtitlesProps = {}) {
   return {
     transcript: returnedTranscript,
     translation: returnedTranslation,
+    latestTranslation,
     listening,
     reset,
     browserSupportsSpeechRecognition,
