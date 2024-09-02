@@ -8,6 +8,7 @@ import { CopyLinkButton } from './CopyLinkButton'
 import { ColorInput } from './ColorInput'
 import { LanguageSelect } from './LanguageSelect'
 import { FontPickerOrCustom } from './FontPickerOrCustom'
+import { TranscriptLanguageSelect } from './TranscriptLanguageSelect'
 
 export function Main() {
   const config = getAllConfig()
@@ -17,8 +18,8 @@ export function Main() {
   const [phraseSepTime, setPhraseSepTime] = useState<number>(
     config.phraseSepTime || defaults.phraseSepTime
   )
-  const [recogLang, setRecogLang] = useState<string>(config.recogLang || defaults.recogLang)
-  const [transLang, setTransLang] = useState<string>(config.transLang || defaults.transLang)
+  const [recogLang, setRecogLang] = useState<string>('en')
+  const [transLangs, setTransLangs] = useState<string[]>(config.transLangs || defaults.transLangs)
   const [recogFont, setRecogFont] = useState<string>(config.recogFont || defaults.recogFont)
   const [customRecogFont, setCustomRecogFont] = useState<string>(
     config.customRecogFont || defaults.customRecogFont
@@ -89,15 +90,13 @@ export function Main() {
   }
 
   const onChangeRecogLang = (lang: string) => {
-    const newValue = lang || recogLang
-    setRecogLang(newValue)
-    saveConfig('recogLang', newValue)
+    setRecogLang(lang)
+    saveConfig('recogLang', lang)
   }
 
-  const onChangeTransLang = (lang: string) => {
-    const newValue = lang || transLang
-    setTransLang(newValue)
-    saveConfig('transLang', newValue)
+  const onChangeTransLang = (langs: string[]) => {
+    setTransLangs(langs)
+    saveConfig('transLangs', langs)
   }
 
   const onChangeRecogFont = (font: string) => {
@@ -240,7 +239,7 @@ export function Main() {
         apiKey={apiKey}
         phraseSepTime={phraseSepTime}
         recogLang={recogLang}
-        transLang={transLang}
+        transLangs={transLangs}
         recogFont={useCustomRecogFont ? customRecogFont : recogFont}
         transFont={useCustomTransFont ? customTransFont : transFont}
         bgColor={bgColor}
@@ -490,7 +489,7 @@ export function Main() {
                 </sup>
               </Label>
               <span className="inline-flex gap-x-4">
-                <LanguageSelect
+                <TranscriptLanguageSelect
                   id="recogLang"
                   defaultValue={recogLang}
                   onChange={onChangeRecogLang}
@@ -525,7 +524,7 @@ export function Main() {
               <span className="inline-flex gap-x-4">
                 <LanguageSelect
                   id="transLang"
-                  defaultValue={transLang}
+                  defaultValue={transLangs}
                   onChange={onChangeTransLang}
                 />
               </span>

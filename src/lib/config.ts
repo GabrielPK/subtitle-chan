@@ -3,7 +3,7 @@ import { getAllParams, parseBoolean, parseNumber } from '../lib/url'
 export interface Config {
   apiKey?: string
   recogLang?: string
-  transLang?: string
+  transLangs?: string[]
   bgColor?: string
   recogFont?: string
   recogFontSize?: number
@@ -33,8 +33,8 @@ export interface Config {
 }
 
 export const defaults = {
-  recogLang: 'ko',
-  transLang: 'en',
+  recogLang: 'en',
+  transLangs: ['ja'],
   bgColor: '#00ff00',
   recogFont: 'Ubuntu',
   recogFontSize: 34,
@@ -66,7 +66,7 @@ export const defaults = {
 export const ConfigKeys = [
   'apiKey',
   'recogLang',
-  'transLang',
+  'transLangs',
   'bgColor',
   'recogFont',
   'recogFontSize',
@@ -123,7 +123,7 @@ export function getAllConfig() {
   const config: Config = {
     phraseSepTime: getConfig('phraseSepTime'),
     recogLang: getConfig('recogLang'),
-    transLang: getConfig('transLang'),
+    transLangs: getConfig('transLangs'),
     recogFont: getConfig('recogFont'),
     transFont: getConfig('transFont'),
     recogFontSize: getConfig('recogFontSize'),
@@ -168,7 +168,7 @@ export function getConfigFromUrlParams() {
   const config: Config = {
     phraseSepTime: parseNumber(params.get('phraseSepTime')),
     recogLang: params.get('recogLang') || undefined,
-    transLang: params.get('transLang') || undefined,
+    transLangs: params.get('transLangs')?.split(',') || undefined,
     recogFont: params.get('recogFont') || undefined,
     transFont: params.get('transFont') || undefined,
     recogFontSize: parseNumber(params.get('recogFontSize')),

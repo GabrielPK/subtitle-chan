@@ -1,6 +1,8 @@
+const DEBUG = true;
+
 class Logger {
   log(message: any) {
-    console.log(message)
+    if (DEBUG) console.log(message)
   }
 
   error(message: any) {
@@ -8,7 +10,15 @@ class Logger {
   }
 
   debug(message: any) {
-    console.debug(message)
+    if (DEBUG) console.debug(message)
+  }
+
+  setDebug(value: boolean) {
+    (DEBUG as any) = value;
+  }
+
+  getDebug(): boolean {
+    return DEBUG;
   }
 }
 

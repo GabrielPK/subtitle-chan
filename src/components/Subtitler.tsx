@@ -4,12 +4,13 @@ import { Subtitle } from './Subtitle'
 import { IconToggle } from './IconToggle'
 import { MicIcon } from './icons/MicIcon'
 import { SettingsIcon } from './icons/SettingsIcon'
+import { TTSPlayer } from './TTSPlayer'
 
 export interface SubtitlerProps {
   apiKey?: string
   phraseSepTime: number
   recogLang: string
-  transLang: string
+  transLangs: string[]
   recogFont: string
   transFont: string
   bgColor: string
@@ -35,7 +36,7 @@ export function Subtitler({
   apiKey,
   phraseSepTime,
   recogLang,
-  transLang,
+  transLangs,
   recogFont,
   transFont,
   bgColor,
@@ -65,9 +66,10 @@ export function Subtitler({
     browserSupportsSpeechRecognition,
     isMicrophoneAvailable,
     translation,
+    latestTranslation, // Make sure this is returned from useSubtitles
   } = useSubtitles({
     recogLang,
-    transLang,
+    transLangs,
     apiKey,
     phraseSepTime,
     enabled,
@@ -143,19 +145,29 @@ Nulla architecto corrupti et debitis rem. Ut soluta dolorum soluta sint qui dolo
         fontStrokeWidth={recogFontStrokeWidth}
         height={recogHeight}
       />
-      <Subtitle
-        fontFamily={transFont}
-        value={translation}
-        inputId="transSubtitles"
-        bgColor={bgColor}
-        fontColor={transFontColor}
-        fontStrokeColor={transFontStrokeColor}
-        fontSize={transFontSize}
-        fontWeight={transFontWeight}
-        fontStrokeWidth={transFontStrokeWidth}
-        scrollBottom={showHistory}
-        height={transHeight}
-      />
+      {transLangs.map((lang, index) => (
+        <div key={lang}>
+          <Subtitle
+            fontFamily={transFont}
+            value={latestTranslation[lang] || ''}
+            inputId={`transSubtitles-${lang}`}
+            bgColor={bgColor}
+            fontColor={transFontColor}
+            fontStrokeColor={transFontStrokeColor}
+            fontSize={transFontSize}
+            fontWeight={transFontWeight}
+            fontStrokeWidth={transFontStrokeWidth}
+            scrollBottom={showHistory}
+            height={transHeight}
+          />
+          {index === 0 && (
+            <TTSPlayer
+              text={latestTranslation[lang] || ''}
+              lang={lang}
+            />
+          )}
+        </div>
+      ))}
       <div className="p-8 border border-gray-200">
         <div className="flex justify-between">
           <div className="flex space-x-4">
