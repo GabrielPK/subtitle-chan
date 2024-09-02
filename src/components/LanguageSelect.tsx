@@ -4,10 +4,10 @@ import { useState } from 'react'
 export type LanguageType = 'transcribe' | 'translate'
 
 export interface LanguageSelectProps {
-  defaultValue?: string // Allows passing short language code instead of full react-select OptionType
+  defaultValue?: string[] // Change this to string[]
   languageType?: LanguageType
   id?: string
-  onChange?: (newValue: string) => void
+  onChange?: (newValue: string[]) => void // Update this to accept string[]
 }
 
 // Supported translate languages
@@ -17,8 +17,8 @@ export interface LanguageSelectProps {
 // ref: https://stackoverflow.com/questions/14257598
 export const translateLanguages = {
   en: ['English', 'English'],
-  ko: ['Korean', '한국어'],
   ja: ['Japanese', '日本語'],
+  ko: ['Korean', '한국어'],
   ar: ['Arabic', 'العربية'],
   zh: ['Chinese (Simplified)', '中文'],
   'zh-TW': ['Chinese (Traditional)', '中文(台灣)'],
@@ -71,70 +71,37 @@ export function LanguageSelect<
 // ref: https://stackoverflow.com/a/74143834
 export function LanguageSelect({
   languageType = 'translate',
-  defaultValue = 'en',
+  defaultValue = ['en'],
   onChange,
   id,
   ...props
 }: LanguageSelectProps) {
   const languages = languageType === 'translate' ? translateLanguages : transcribeLanguages
-  let defaultLabel = 'English'
-  if (Object.prototype.hasOwnProperty.call(languages, defaultValue)) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    defaultLabel = languages[defaultValue][0]
-  }
-  const languageOptions: Option[] = Object.entries(languages).map(([key, value]) => {
-    return {
-      value: key ?? '',
-      label: value[0] ?? '',
-    }
-  })
+  const languageOptions: Option[] = Object.entries(languages).map(([key, value]) => ({
+    value: key,
+    label: value[0],
+  }))
 
-  const defaultOption: Option = {
-    value: defaultValue ?? '',
-    label: defaultLabel ?? '',
-  }
+  const defaultOptions = defaultValue.map(lang => ({
+    value: lang,
+    label: (languages as Record<string, string[]>)[lang]?.[0] || lang,
+  }))
 
-  const [state, setState] = useState<ArrayObjectSelectState>({
-    selectedOption: defaultOption,
-  })
-
-  const handleChange = (newValue: SingleValue<Option>, meta: ActionMeta<Option>) => {
-    if (newValue !== null) {
-      setState({ selectedOption: newValue })
-      onChange?.(newValue.value)
-    }
+  const handleChange = (newValue: readonly Option[], actionMeta: ActionMeta<Option>) => {
+    const newLangs = newValue.map(option => option.value)
+    onChange?.(newLangs)
   }
 
   return (
-    <>
-      <ReactSelect
-        inputId={id}
-        options={languageOptions}
-        getOptionLabel={(opt: Option) => opt.label}
-        getOptionValue={(opt: Option) => opt.value}
-        value={state.selectedOption}
-        onChange={handleChange}
-        isSearchable
-        components={{
-          // Hide dropdown indicator to match fontpicker
-          IndicatorSeparator: () => null,
-          DropdownIndicator: () => null,
-        }}
-        className="w-64"
-        //styles={{
-        //  control: base => ({
-        //    ...base,
-        //    '&:active': {
-        //      border: '1px solid #000',
-        //    },
-        //    '&:focus': {
-        //      border: '1px solid #000',
-        //    }
-        //  })
-        //}}
-        {...props}
-      />
-    </>
+    <ReactSelect
+      inputId={id}
+      options={languageOptions}
+      value={defaultOptions}
+      onChange={handleChange}
+      isMulti
+      isSearchable
+      className="w-64"
+      {...props}
+    />
   )
 }

@@ -9,7 +9,7 @@ export interface SubtitlerProps {
   apiKey?: string
   phraseSepTime: number
   recogLang: string
-  transLang: string
+  transLangs: string[]
   recogFont: string
   transFont: string
   bgColor: string
@@ -35,7 +35,7 @@ export function Subtitler({
   apiKey,
   phraseSepTime,
   recogLang,
-  transLang,
+  transLangs,
   recogFont,
   transFont,
   bgColor,
@@ -67,7 +67,7 @@ export function Subtitler({
     translation,
   } = useSubtitles({
     recogLang,
-    transLang,
+    transLangs,
     apiKey,
     phraseSepTime,
     enabled,
@@ -143,19 +143,22 @@ Nulla architecto corrupti et debitis rem. Ut soluta dolorum soluta sint qui dolo
         fontStrokeWidth={recogFontStrokeWidth}
         height={recogHeight}
       />
-      <Subtitle
-        fontFamily={transFont}
-        value={translation}
-        inputId="transSubtitles"
-        bgColor={bgColor}
-        fontColor={transFontColor}
-        fontStrokeColor={transFontStrokeColor}
-        fontSize={transFontSize}
-        fontWeight={transFontWeight}
-        fontStrokeWidth={transFontStrokeWidth}
-        scrollBottom={showHistory}
-        height={transHeight}
-      />
+      {transLangs.map((lang) => (
+        <Subtitle
+          key={lang}
+          fontFamily={transFont}
+          value={translation[lang] || ''}
+          inputId={`transSubtitles-${lang}`}
+          bgColor={bgColor}
+          fontColor={transFontColor}
+          fontStrokeColor={transFontStrokeColor}
+          fontSize={transFontSize}
+          fontWeight={transFontWeight}
+          fontStrokeWidth={transFontStrokeWidth}
+          scrollBottom={showHistory}
+          height={transHeight}
+        />
+      ))}
       <div className="p-8 border border-gray-200">
         <div className="flex justify-between">
           <div className="flex space-x-4">

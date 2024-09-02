@@ -19,18 +19,21 @@ export interface useSubtitlesProps {
   maxDelay?: number
   usePost?: boolean
   showHistory?: boolean
+  transLangs?: string[]
 }
 
 export function useSubtitles(props: useSubtitlesProps = {}) {
-  const [translation, setTranslation] = useState('')
+  // const [translation, setTranslation] = useState('')
+  // const [translationLog, setTranslationLog] = useState('')
 
   const maxLogSize = 5000 // Fairly arbitrary, rendering plaintext is cheap
   const [transcriptLog, setTranscriptLog] = useState('')
-  const [translationLog, setTranslationLog] = useState('')
+  const [translation, setTranslation] = useState<{ [key: string]: string }>({})
+  const [translationLog, setTranslationLog] = useState<{ [key: string]: string }>({})
 
   const {
-    recogLang = 'ko',
-    transLang = 'en',
+    recogLang = 'en',
+    transLang = 'ja',
     interimResults = true,
     apiKey,
     phraseSepTime = 750, // ms
@@ -44,6 +47,7 @@ export function useSubtitles(props: useSubtitlesProps = {}) {
     maxDelay = 5000, // ms, must be less than about a minute, see above
     usePost = false,
     showHistory = false,
+    transLangs = ['ja', 'pt'],
   } = props
 
   const transUrl = 'https://script.google.com/macros/s/' + apiKey + '/exec'
@@ -109,44 +113,48 @@ export function useSubtitles(props: useSubtitlesProps = {}) {
 
   const reset = async () => {
     resetTranscript()
-    setTranslation('')
+    setTranslation({})
     setTranscriptLog('')
-    setTranslationLog('')
+    setTranslationLog({})
   }
 
   // Google Apps Script can throw CORS errors sometimes, even on GET
   // ref: https://stackoverflow.com/a/68933465
 
   const doQuery = async (text: string, usePost = false) => {
-    let query
-    if (usePost) {
-      query = `${transUrl}?source=${recogLang}&target=${transLang}`
-      logger.log('query: POST ' + query + ', body: ' + text)
-    } else {
-      query = `${transUrl}?text=${text}&source=${recogLang}&target=${transLang}`
-      logger.log('query: GET ' + query)
-    }
-    try {
-      const requestConfig = {
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8',
-        },
-      }
-      let resp: AxiosResponse
+    const translations: { [key: string]: string } = {}
+    for (const lang of transLangs) {
+      let query
       if (usePost) {
-        resp = await axios.post(query, text, requestConfig)
+        query = `${transUrl}?source=${recogLang}&target=${lang}`
       } else {
-        resp = await axios.get(query, requestConfig)
+        query = `${transUrl}?text=${text}&source=${recogLang}&target=${lang}`
       }
-      const trans = resp?.data ?? ''
-      logger.log('resp: ' + trans)
-      if (trans) {
-        setTranslation(trans)
-        setTranslationLog((prev) => appendToFixedSizeString(prev, ' ' + trans, maxLogSize))
+      try {
+        const requestConfig = {
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+        }
+        let resp: AxiosResponse
+        if (usePost) {
+          resp = await axios.post(query, text, requestConfig)
+        } else {
+          resp = await axios.get(query, requestConfig)
+        }
+        const trans = resp?.data ?? ''
+        if (trans) {
+          translations[lang] = trans
+          setTranslationLog((prev) => ({
+            ...prev,
+            [lang]: appendToFixedSizeString(prev[lang] || '', ' ' + trans, maxLogSize),
+          }))
+        }
+      } catch (e) {
+        logger.error(e)
       }
-    } catch (e) {
-      logger.error(e)
     }
+    setTranslation(translations)
   }
 
   const returnedTranscript = showHistory
