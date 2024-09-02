@@ -1,5 +1,3 @@
-__*Update: You might not need this project anymore. Chrome now supports live captions, the settings are at: chrome://settings/captions*__
-
 # subtitle-chan
 
 Forked from https://github.com/sayonari/jimakuChan (jimaku = subtitle) and rewritten for React + Vite + Typescript.
